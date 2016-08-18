@@ -23,5 +23,5 @@ class RmbdClient:
     def sync(self, row, counters):
         self.send(b'2' + struct.pack(
             'H' + 'L'*len(counters),
-            *((row,) + tuple(counters)))
-            )
+            *((row,) + tuple(counters)),
+            ))
