@@ -35,7 +35,7 @@ class RMBServer(DatagramServer):
 
     def handle(self, data, address):
         req_type = data[0]
-        param    = data[1:]
+        param    = memoryview(data, 1)
 
         # add request
         if req_type == ord('0'):
