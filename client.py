@@ -16,13 +16,12 @@ class RmbdClient:
     def count(self, key):
         self.send(b'1' + key)
         size = struct.calcsize('L140p')
-        count, key = struct.unpack('L140p', self.socket.recv(size))
-        if key == key:
+        count, recv = struct.unpack('L140p', self.socket.recv(size))
+        if recv == key:
             return count
 
     def sync(self, row, counters):
-        self.send(
-            b'2' +
-            struct.pack('H' + 'L'*len(counters),
-                *((row,) + tuple(counters)))
-        )
+        self.send(b'2' + struct.pack(
+            'H' + 'L'*len(counters),
+            *((row,) + tuple(counters)))
+            )
