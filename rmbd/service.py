@@ -1,7 +1,7 @@
 from collections import deque
 from time import time
 from .countminsketch import CountMinSketch, merge
-from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH
+from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit
 from gevent.server import DatagramServer
 import gevent.socket as socket
 import gevent
@@ -41,7 +41,7 @@ class RMBServer(DatagramServer):
             times.clear()
 
             for index, row in enumerate(self.cms.array):
-                packet = chr(Type.sync.value).encode() + SYNC_REQ.pack(index, *row)
+                packet = bit(Type.sync) + SYNC_REQ.pack(index, *row)
                 for peer in self.peers:
                     self.socket.sendto(packet, peer)
                     times[peer] = time()
@@ -62,7 +62,7 @@ class RMBServer(DatagramServer):
         index, *row = request.params
         if index < self.cms.depth:
             merge(self.cms, index, row)
-            self.socket.sendto(chr(Type.ack.value).encode(), request.peer)
+            self.socket.sendto(bit(Type.ack), request.peer)
 
     def handle_peer(self, request):
         addr, port = request.params

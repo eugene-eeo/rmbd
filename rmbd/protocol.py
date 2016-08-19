@@ -13,6 +13,8 @@ COUNT_RES = Struct(KEY.format + COUNT.format)
 PEER_REQ  = Struct(KEY.format + COUNT.format)
 SYNC_REQ  = Struct(INDEX.format + str(WIDTH).encode() + COUNT.format)
 
+Request = namedtuple('Request', 'type,params,peer')
+
 
 class Type(Enum):
     add   = 0
@@ -22,7 +24,8 @@ class Type(Enum):
     ack   = 4
 
 
-Request = namedtuple('Request', 'type,params,peer')
+def bit(type):
+    return chr(type.value).encode()
 
 
 def try_unpack(type, struct, data):
