@@ -12,13 +12,13 @@ in Python, e.g. buffers and structs.
 
 Servers respond to 5 types of messages:
 
-|  type  | format          | description                                              |
-|:------:|-----------------|----------------------------------------------------------|
-| add    | `'\x00' + 140p` | add a key (140p) to the internal count-min-sketch        |
-| count  | `'\x01' + 140p` | count approximate occurences of key                      |
-| sync   | `'\x02' + H100L`| updates the row at the given index (`H`)                 |
-| peer   | `'\x03' + 140pH`| add a peer (hostname=`140p`, port=`H`) to the peers list |
-| ack    | `'\x04'`        | acknowledge the successful sync of a row                 |
+|  type  | format        | description                                              | response     |
+|:------:|---------------|----------------------------------------------------------|--------------|
+| add    | `'\x00'+140p` | add a key (140p) to the internal count-min-sketch        |              |
+| count  | `'\x01'+140p` | count approximate occurences of key                      | `140pL`      |
+| sync   | `'\x02'+H100L`| updates the row at the given index (`H`)                 | `\x04` (ack) |
+| peer   | `'\x03'+140pH`| add a peer (hostname=`140p`, port=`H`) to the peers list |              |
+| ack    | `'\x04'`      | acknowledge the successful sync of a row                 |              |
 
 Upon each `ack` request, the server sets the time of receiving into
 a table that maps the peer to the receiving time. Disconnection of
