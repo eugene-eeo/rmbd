@@ -1,7 +1,7 @@
 # rmbd
 
 Experimental server that can replicate a count-min-sketch with other
-instances by using a gossip protocol.
+instances by using a gossip protocol, for Python 3+ because reasons.
 
     $ rmbd <host>:<port> -x <width> -y <depth>
 
@@ -27,6 +27,31 @@ larger than the send time of a `sync` request.
 
 `peer` is one way- sending it to a server means that the server will
 now send `sync` requests to said peer.
+
+## usage
+
+The toolchain is a big WIP. Currently to start server:
+
+    $ pip install -r requirements.txt
+    $ python -m rmbd localhost:8000 &
+      python -m rmbd localhost:9000
+
+    # in a separate tab/split
+    $ python
+    >>> from client import RmbdClient
+    >>> c = RmbdClient((b'localhost', 8000))
+    >>> d = RmbdClient((b'localhost', 9000))
+
+    # two way sync
+    >>> c.peer((b'localhost', 9000))
+    >>> d.peer((b'localhost', 8000))
+
+    >>> c.add(b'abc')
+    >>> d.add(b'abc')
+    >>> c.count(b'abc') # HOLY CRAP
+    2
+    >>> d.count(b'abc') # MUCH WOW
+    2
 
 ## todo
 
