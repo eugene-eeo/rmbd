@@ -15,7 +15,8 @@ def handle_count(cms, send, params):
 
 def handle_sync(cms, send, params):
     index, *row = params
-    merge(cms, index, row)
+    if index < cms.depth:
+        merge(cms, index, row)
 
 
 class RMBServer(DatagramServer):
@@ -34,6 +35,8 @@ class RMBServer(DatagramServer):
 
     def handle(self, data, address):
         request = parse_request(memoryview(data))
+        if request.type == Type.invalid:
+            return
         self.handlers[request.type](
             self.cms,
             lambda data: self.socket.sendto(data, address),

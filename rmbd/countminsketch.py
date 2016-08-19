@@ -7,7 +7,7 @@ def khash(k, datum):
 
 
 class CountMinSketch:
-    def __init__(self, width, depth):
+    def __init__(self, width=100, depth=10):
         self.width = width
         self.depth = depth
         self.array = [[0]*self.width for _ in range(self.depth)]
