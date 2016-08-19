@@ -35,7 +35,7 @@ class RMBServer(DatagramServer):
         times = {}
         while not self.closing:
             for peer in times:
-                ack  = self.acks.get(peer, 0)
+                ack = self.acks.get(peer, 0)
                 if ack < times[peer]:
                     self.peers.remove(peer)
             times.clear()
@@ -60,7 +60,6 @@ class RMBServer(DatagramServer):
 
     def handle_sync(self, request):
         index, *row = request.params
-        print('SYNC from %s: ROW %s' % (request.peer, index))
         if index < self.cms.depth:
             merge(self.cms, index, row)
             self.socket.sendto(chr(Type.ack.value).encode(), request.peer)
@@ -70,7 +69,6 @@ class RMBServer(DatagramServer):
         self.peers.add((socket.gethostbyname(addr), port))
 
     def handle_ack(self, request):
-        print('ACK from %s' % (request.peer,))
         self.acks[request.peer] = time()
 
     def close(self):
