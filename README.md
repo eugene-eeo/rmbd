@@ -7,3 +7,9 @@ instances by using a gossip protocol.
 
 It is also a way for me to learn the lower level libraries and tools
 in Python, e.g. buffers and structs.
+
+## todo
+
+ - rewrite with better code
+ - implement automatic sync mechanism
+ - add tests

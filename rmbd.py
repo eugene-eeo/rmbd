@@ -1,11 +1,11 @@
-import struct
-import fnvhash
+from struct import Struct
+from fnvhash import fnv1a_32
 from gevent.server import DatagramServer
 
 
 def khash(k, datum):
     for i in range(k):
-        yield fnvhash.fnv1a_32(datum, i)
+        yield fnv1a_32(datum, i)
 
 
 class CountMinSketch:
@@ -25,40 +25,53 @@ class CountMinSketch:
         return min(xs)
 
 
+def merge(cms, index, counters):
+    row = cms[index]
+    for idx, item in enumerate(counters):
+        row[idx] = max(row[idx], item)
+
+
+DEPTH = 10
+WIDTH = 100
+KEY   = Struct('140p')
+INDEX = Struct('H')
+COUNT = Struct('L')
+
+COUNT_RES = Struct(KEY.format + COUNT.format)
+SYNC_REQ  = Struct(INDEX.format + COUNT.format * WIDTH)
+
+
 class RMBServer(DatagramServer):
     def start(self):
         super().start()
-        self.__count_min_sketch = CountMinSketch(
-            width=100,
-            depth=10,
+        self.cms = CountMinSketch(
+            width=WIDTH,
+            depth=DEPTH,
             )
 
     def handle(self, data, address):
-        req_type = data[0]
-        param    = data[1:]
+        type = data[0]
+        rest = memoryview(data)[1:]
 
         # add request
-        if req_type == ord('0'):
-            self.__count_min_sketch.add(param)
+        if type == 0:
+            key, = KEY.unpack(rest)
+            self.cms.add(key)
 
         # count request
-        elif req_type == ord('1'):
-            count = self.__count_min_sketch.count(param)
+        elif type == 1:
+            key, = KEY.unpack(rest)
             self.socket.sendto(
-                struct.pack('L140p', count, param),
+                COUNT_RES.pack(key, self.cms.count(key)),
                 address,
                 )
 
         # sync request
-        elif req_type == ord('2'):
-            index, *counters = struct.unpack(
-                'H' + 'L'*self.__count_min_sketch.width,
-                param,
-                )
-            row = self.__count_min_sketch.array[index]
-            row = [max(row[i], counters[i]) for i in range(len(row))]
-            self.__count_min_sketch.array[index] = row
+        elif type == 2:
+            index, *counters = SYNC_REQ.unpack(data)
+            merge(self.cms, index, counters)
 
 
 if __name__ == '__main__':
-    RMBServer('localhost:9000').serve_forever()
+    import sys
+    RMBServer(sys.argv[1]).serve_forever()
