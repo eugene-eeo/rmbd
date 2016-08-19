@@ -26,8 +26,8 @@ sync requests it will reply with an `ack` if it was accepted.
 
 Upon each `ack` request, the server updates  a table that maps the
 peer to the receiving time. Disconnect detection of a peer in the
-peer list is done by checking whether the ack time is larger than
-the send time of a `sync` request.
+peer list is done by checking (after some delay) whether the ack
+time is larger than the send time of a `sync` request.
 
 ## usage
 
