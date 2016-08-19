@@ -7,6 +7,13 @@ import gevent.socket as socket
 import gevent
 
 
+def get_outdated_peers(times, acks):
+    for peer in times:
+        ack = acks.get(peer, 0)
+        if ack < times[peer]:
+            yield peer
+
+
 class RMBServer(DatagramServer):
     def start(self):
         super().start()
@@ -34,10 +41,8 @@ class RMBServer(DatagramServer):
     def background_sync(self, delay=0.5):
         times = {}
         while not self.closing:
-            for peer in times:
-                ack = self.acks.get(peer, 0)
-                if ack < times[peer]:
-                    self.peers.remove(peer)
+            for peer in get_outdated_peers(times, self.acks):
+                self.peers.remove(peer)
             times.clear()
 
             for index, row in enumerate(self.cms.array):
