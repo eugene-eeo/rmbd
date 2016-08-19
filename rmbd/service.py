@@ -29,21 +29,12 @@ class RMBServer(DatagramServer):
             self.handlers[request.type](request)
 
     def background_sync(self, delay=0.5):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         while not self.closing:
             gevent.sleep(delay)
             for index, row in enumerate(self.cms.array):
-                to_remove = set()
                 packet = chr(Type.sync.value).encode() + SYNC_REQ.pack(index, *row)
                 for peer in self.peers:
-                    try:
-                        sock.sendto(packet, peer)
-                    except ConnectionError:
-                        print('DISCONNECTING %r' % peer)
-                        to_remove.add(peer)
-
-                for peer in to_remove:
-                    self.peers.discard(peer)
+                    self.socket.sendto(packet, peer)
 
     def handle_add(self, request):
         key, = request.params
