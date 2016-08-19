@@ -1,5 +1,5 @@
 from collections import namedtuple
-from struct import Struct
+from struct import Struct, error
 from enum import Enum
 
 
@@ -14,21 +14,29 @@ SYNC_REQ  = Struct(INDEX.format + COUNT.format * WIDTH)
 
 
 class Type(Enum):
-    invalid = -1
     add = 0
     count = 1
     sync = 2
 
 
 Request = namedtuple('Request', 'type,params')
-InvalidRequest = Request(Type.invalid, ())
+
+
+def try_unpack(type, struct, data):
+    try:
+        return Request(type, struct.unpack(data))
+    except error:
+        return None
 
 
 def parse_request(memview):
+    if not len(memview):
+        return None
+
     type = memview[0]
     rest = memview[1:]
 
-    if type == 0: return Request(Type.add,   KEY.unpack(rest))
-    if type == 1: return Request(Type.count, KEY.unpack(rest))
-    if type == 2: return Request(Type.sync,  SYNC_REQ.unpack(rest))
-    return InvalidRequest
+    if type == 0: return try_unpack(Type.add,   KEY, rest)
+    if type == 1: return try_unpack(Type.count, KEY, rest)
+    if type == 2: return try_unpack(Type.sync,  SYNC_REQ, rest)
+    return None

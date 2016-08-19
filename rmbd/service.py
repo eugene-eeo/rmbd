@@ -35,7 +35,7 @@ class RMBServer(DatagramServer):
 
     def handle(self, data, address):
         request = parse_request(memoryview(data))
-        if request.type == Type.invalid:
+        if not request:
             return
         self.handlers[request.type](
             self.cms,
