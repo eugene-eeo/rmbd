@@ -1,6 +1,6 @@
 import struct
 import socket
-from rmbd import KEY, SYNC_REQ, COUNT_RES
+from rmbd import KEY, SYNC_REQ, PEER_REQ, COUNT_RES
 
 b = lambda x: chr(x).encode()
 
@@ -24,3 +24,6 @@ class RmbdClient:
 
     def sync(self, row, counters):
         self.send(b(2) + SYNC_REQ.pack(row, *counters))
+
+    def peer(self, peer):
+        self.send(b(3) + PEER_REQ.pack(*peer))
