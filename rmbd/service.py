@@ -1,5 +1,5 @@
 from .countminsketch import CountMinSketch, merge
-from .protocol import parse_request, COUNT_RES, Type
+from .protocol import parse_request, COUNT_RES, Type, WIDTH, DEPTH
 from gevent.server import DatagramServer
 
 

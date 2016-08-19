@@ -24,6 +24,6 @@ class CountMinSketch:
 
 
 def merge(cms, index, counters):
-    row = cms[index]
+    row = cms.array[index]
     for idx, item in enumerate(counters):
         row[idx] = max(row[idx], item)
