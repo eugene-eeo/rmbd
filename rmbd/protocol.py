@@ -21,12 +21,12 @@ class Type(Enum):
     peer = 3
 
 
-Request = namedtuple('Request', 'type,params')
+Request = namedtuple('Request', 'type,params,peer')
 
 
 def try_unpack(type, struct, data):
     try:
-        return Request(type, struct.unpack(data))
+        return type, struct.unpack(data)
     except error:
         return None
 
@@ -43,3 +43,14 @@ def parse_request(memview):
     if type == 2: return try_unpack(Type.sync,  SYNC_REQ, rest)
     if type == 3: return try_unpack(Type.peer,  PEER_REQ, rest)
     return None
+
+
+def parse(data, peer):
+    req = parse_request(memoryview(data))
+    if req:
+        type, params = req
+        return Request(
+                type=type,
+                peer=peer,
+                params=params,
+            )
