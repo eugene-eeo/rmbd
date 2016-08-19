@@ -36,5 +36,5 @@ def test_parse_peer():
 
 def test_parse_invalid():
     assert not parse_request(b(1) + b'abc')
-    assert not parse_request(b(4))
+    assert not parse_request(b(5))
     assert not parse_request(b'')

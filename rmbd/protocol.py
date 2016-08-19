@@ -11,7 +11,7 @@ COUNT = Struct('L')
 
 COUNT_RES = Struct(KEY.format + COUNT.format)
 PEER_REQ  = Struct(KEY.format + COUNT.format)
-SYNC_REQ  = Struct(INDEX.format + COUNT.format * WIDTH)
+SYNC_REQ  = Struct(INDEX.format + str(WIDTH).encode() + COUNT.format)
 
 
 class Type(Enum):
