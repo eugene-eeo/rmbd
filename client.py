@@ -1,6 +1,6 @@
 import struct
 import socket
-from rmbd import KEY, SYNC_REQ, PEER_REQ, COUNT_RES
+from rmbd.protocol import KEY, SYNC_REQ, COUNT_RES, PEER_REQ
 
 b = lambda x: chr(x).encode()
 
