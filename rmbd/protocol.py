@@ -15,10 +15,11 @@ SYNC_REQ  = Struct(INDEX.format + COUNT.format * WIDTH)
 
 
 class Type(Enum):
-    add = 0
+    add   = 0
     count = 1
-    sync = 2
-    peer = 3
+    sync  = 2
+    peer  = 3
+    ack   = 4
 
 
 Request = namedtuple('Request', 'type,params,peer')
@@ -42,6 +43,7 @@ def parse_request(memview):
     if type == 1: return try_unpack(Type.count, KEY, rest)
     if type == 2: return try_unpack(Type.sync,  SYNC_REQ, rest)
     if type == 3: return try_unpack(Type.peer,  PEER_REQ, rest)
+    if type == 4: return (Type.ack, None)
     return None
 
 
