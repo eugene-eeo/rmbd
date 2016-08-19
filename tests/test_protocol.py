@@ -22,7 +22,6 @@ def test_parse_count():
 
 
 def test_parse_sync():
-    row = [0] * 100
+    row = (0,) * 100
     req = parse_request(m(b(2) + SYNC_REQ.pack(1, *row)))
-    print(req)
-    assert req == Request(Type.sync, (1, row))
+    assert req == Request(Type.sync, (1,) + row)

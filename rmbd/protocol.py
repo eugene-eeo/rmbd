@@ -29,5 +29,4 @@ def parse_request(memview):
         return Request(type, KEY.unpack(rest))
 
     elif type == Type.sync:
-        index, *counters = SYNC_REQ.unpack(rest)
-        return Request(type, (index, counters))
+        return Request(type, SYNC_REQ.unpack(rest))
