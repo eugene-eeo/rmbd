@@ -1,29 +1,19 @@
-from collections import deque
 from time import time
 from .countminsketch import CountMinSketch, merge
 from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit
-from gevent.server import DatagramServer
-import gevent.socket as socket
+from .helpers import get_outdated, broadcast, normalize
 import gevent
 
 
-def get_outdated_peers(times, acks):
-    for peer in times:
-        ack = acks.get(peer, 0)
-        if ack < times[peer]:
-            yield peer
+class Service(object):
+    sync_delay = 0.5
 
-
-class RMBServer(DatagramServer):
-    def start(self):
-        super().start()
+    def __init__(self, address, socket):
+        self.cms = CountMinSketch(width=WIDTH, depth=DEPTH)
+        self.address = normalize(address)
+        self.socket = socket
         self.peers = set()
-        self.cms = CountMinSketch(
-            width=WIDTH,
-            depth=DEPTH,
-            )
         self.acks = {}
-        self.closing = False
         self.bg_sync = gevent.spawn(self.background_sync)
         self.handlers = {
             Type.add:   self.handle_add,
@@ -31,26 +21,30 @@ class RMBServer(DatagramServer):
             Type.sync:  self.handle_sync,
             Type.peer:  self.handle_peer,
             Type.ack:   self.handle_ack,
-        }
+            }
 
-    def handle(self, data, address):
-        request = parse(memoryview(data), address)
-        if request:
-            self.handlers[request.type](request)
+    def dispatch(self, data, addr):
+        req = parse(data, addr)
+        if req:
+            self.handlers[req.type](req)
 
-    def background_sync(self, delay=0.5):
-        times = {}
-        while not self.closing:
-            for peer in get_outdated_peers(times, self.acks):
+    def stop(self):
+        self.bg_sync.kill()
+
+    def background_sync(self):
+        last_sent = {}
+        while True:
+            for peer in get_outdated(self.acks, last_sent):
                 self.peers.remove(peer)
-            times.clear()
-
+            self.acks.clear()
+            last_sent.clear()
             for index, row in enumerate(self.cms.array):
-                packet = bit(Type.sync) + SYNC_REQ.pack(index, *row)
-                for peer in self.peers:
-                    self.socket.sendto(packet, peer)
-                    times[peer] = time()
-            gevent.sleep(delay)
+                last_sent.update(broadcast(
+                    self.socket,
+                    self.peers,
+                    bit(Type.sync) + SYNC_REQ.pack(index, *row),
+                    ))
+            gevent.sleep(self.sync_delay)
 
     def handle_add(self, request):
         key, = request.params
@@ -70,12 +64,9 @@ class RMBServer(DatagramServer):
             self.socket.sendto(bit(Type.ack), request.peer)
 
     def handle_peer(self, request):
-        addr, port = request.params
-        self.peers.add((socket.gethostbyname(addr), port))
+        peer = normalize(request.params)
+        if peer != self.address:
+            self.peers.add(peer)
 
     def handle_ack(self, request):
         self.acks[request.peer] = time()
-
-    def close(self):
-        self.closing = True
-        super().close()
