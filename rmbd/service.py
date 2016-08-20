@@ -1,8 +1,19 @@
 from time import time
+import gevent
+import gevent.socket as socket
 from .countminsketch import CountMinSketch, merge
 from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit
-from .helpers import get_outdated, broadcast, normalize
-import gevent
+
+
+def normalize(addr):
+    host, port = addr
+    return socket.gethostbyname(host), port
+
+
+def get_outdated(acks, last_sent):
+    for peer in last_sent:
+        if acks.get(peer, 0) < last_sent[peer]:
+            yield peer
 
 
 class Service(object):
@@ -24,9 +35,11 @@ class Service(object):
             }
 
     def dispatch(self, data, addr):
-        req = parse(data, addr)
-        if req:
-            self.handlers[req.type](req)
+        info = parse(data)
+        if not info:
+            return
+        req = Request(*info, addr)
+        self.handlers[info.type](req)
 
     def stop(self):
         self.bg_sync.kill()
@@ -39,11 +52,10 @@ class Service(object):
             self.acks.clear()
             last_sent.clear()
             for index, row in enumerate(self.cms.array):
-                last_sent.update(broadcast(
-                    self.socket,
-                    self.peers,
-                    bit(Type.sync) + SYNC_REQ.pack(index, *row),
-                    ))
+                packet = bit(Type.sync) + SYNC_REQ.pack(index, *row)
+                for peer in self.peers:
+                    self.socket.sendto(packet, peer)
+                    last_sent[peer] = time()
             gevent.sleep(self.sync_delay)
 
     def handle_add(self, request):

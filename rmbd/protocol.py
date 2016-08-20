@@ -32,12 +32,12 @@ def try_unpack(type, struct, data):
         return None
 
 
-def parse_request(memview):
-    if not len(memview):
+def parse(data):
+    if not len(data):
         return None
 
-    type = memview[0]
-    rest = memview[1:]
+    type = data[0]
+    rest = memoryview(data)[1:]
 
     if type == 0: return try_unpack(Type.add,   KEY, rest)
     if type == 1: return try_unpack(Type.count, KEY, rest)
@@ -45,14 +45,3 @@ def parse_request(memview):
     if type == 3: return try_unpack(Type.peer,  PEER_REQ, rest)
     if type == 4: return (Type.ack, None)
     return None
-
-
-def parse(data, peer):
-    req = parse_request(memoryview(data))
-    if req:
-        type, params = req
-        return Request(
-                type=type,
-                peer=peer,
-                params=params,
-            )

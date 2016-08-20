@@ -1,39 +1,39 @@
-from rmbd.protocol import KEY, PEER_REQ, SYNC_REQ, Type, parse, bit, Request
+from rmbd.protocol import KEY, PEER_REQ, SYNC_REQ, Type, parse, bit
 
 
 addr = ('localhost', 9000)
 
 
 def test_parse_add():
-    req = parse(bit(Type.add) + KEY.pack(b'abc'), addr)
-    assert req == Request(Type.add, (b'abc',), addr)
+    req = parse(b'\x00' + KEY.pack(b'abc'))
+    assert req == (Type.add, (b'abc',))
 
 
 def test_parse_count():
-    req = parse(bit(Type.count) + KEY.pack(b'abc'), addr)
-    assert req == Request(Type.count, (b'abc',), addr)
+    req = parse(b'\x01' + KEY.pack(b'abc'))
+    assert req == (Type.count, (b'abc',))
 
 
 def test_parse_sync():
     row = (0,) * 100
-    req = parse(bit(Type.sync) + SYNC_REQ.pack(1, *row), addr)
-    assert req == Request(Type.sync, (1,) + row, addr)
+    req = parse(b'\x02' + SYNC_REQ.pack(1, *row))
+    assert req == (Type.sync, (1,) + row)
 
 
 def test_parse_peer():
-    req = parse(bit(Type.peer) + PEER_REQ.pack(b'hostname', 1000), addr)
-    assert req == Request(Type.peer, (b'hostname', 1000), addr)
+    req = parse(b'\x03' + PEER_REQ.pack(b'hostname', 1000))
+    assert req == (Type.peer, (b'hostname', 1000))
 
 
 def test_parse_ack():
-    req = parse(bit(Type.ack), addr)
-    assert req == Request(Type.ack, None, addr)
+    req = parse(b'\x04')
+    assert req == (Type.ack, None)
 
 
 def test_parse_invalid():
-    assert not parse(b'\x00' + b'abc', addr)
-    assert not parse(b'\x05', addr)
-    assert not parse(b'', addr)
+    assert not parse(b'\x00' + b'abc')
+    assert not parse(b'\x05')
+    assert not parse(b'')
 
 
 def test_bit():

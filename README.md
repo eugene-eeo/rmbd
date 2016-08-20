@@ -12,13 +12,13 @@ Servers respond to 5 types of requests. Requests are in the form
 Refer to [struct](https://docs.python.org/3/library/struct.html)
 for the formats.
 
-|  type  | byte   | format   | description                                         | response     |
-|:------:|--------|----------|-----------------------------------------------------|--------------|
-| add    | `\x00` | `!140p`  | add a key (`140p`) to the internal count-min-sketch |              |
-| count  | `\x01` | `!140p`  | count approximate occurences of key                 | `!140pL`     |
-| sync   | `\x02` | `!H100L` | updates the row (`100L`) at the given index (`H`)   | `\x04` (ack) |
-| peer   | `\x03` | `!140pL` | add a peer (`140p`, `L`) to the peers list          |              |
-| ack    | `\x04` |          | acknowledge the successful sync of a row            |              |
+|  type  | byte   | format   | description                                       | response     |
+|:------:|--------|----------|---------------------------------------------------|--------------|
+| add    | `\x00` | `!140p`  | count a key (`140p`)                              |              |
+| count  | `\x01` | `!140p`  | count approximate occurences of key               | `!140pL`     |
+| sync   | `\x02` | `!H100L` | updates the row (`100L`) at the given index (`H`) | `\x04` (ack) |
+| peer   | `\x03` | `!140pL` | add a peer (`140p`, `L`) to the peers list        |              |
+| ack    | `\x04` |          | acknowledge the successful sync of a row          |              |
 
 When servers receive a `sync` request, they update their count-min-sketch
 using the following algorithm:
