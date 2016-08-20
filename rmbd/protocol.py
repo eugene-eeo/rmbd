@@ -5,13 +5,10 @@ from enum import Enum
 
 DEPTH = 10
 WIDTH = 100
-KEY   = Struct('140p')
-INDEX = Struct('H')
-COUNT = Struct('L')
-
-COUNT_RES = Struct(KEY.format + COUNT.format)
-PEER_REQ  = Struct(KEY.format + COUNT.format)
-SYNC_REQ  = Struct(INDEX.format + str(WIDTH).encode() + COUNT.format)
+KEY   = Struct('!140p')
+COUNT_RES = Struct('!140pL')
+PEER_REQ  = Struct('!140pL')
+SYNC_REQ  = Struct('!H100L')
 
 Request = namedtuple('Request', 'type,params,peer')
 
