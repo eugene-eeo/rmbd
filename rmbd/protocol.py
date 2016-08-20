@@ -1,14 +1,15 @@
+import struct
 from collections import namedtuple
-from struct import Struct, error
 from enum import Enum
 
 
 DEPTH = 10
 WIDTH = 100
-KEY   = Struct('!140p')
-COUNT_RES = Struct('!140pL')
-PEER_REQ  = Struct('!140pL')
-SYNC_REQ  = Struct('!H100L')
+ADD_REQ   = struct.Struct('!140p')
+COUNT_REQ = struct.Struct('!140p')
+COUNT_RES = struct.Struct('!140pL')
+PEER_REQ  = struct.Struct('!140pL')
+SYNC_REQ  = struct.Struct('!H100L')
 
 Request = namedtuple('Request', 'type,params,peer')
 
@@ -25,10 +26,10 @@ def bit(type):
     return chr(type.value).encode()
 
 
-def try_unpack(type, struct, data):
+def try_unpack(type, format, data):
     try:
-        return type, struct.unpack(data)
-    except error:
+        return type, format.unpack(data)
+    except struct.error:
         return None
 
 
@@ -39,8 +40,8 @@ def parse(data):
     type = data[0]
     rest = memoryview(data)[1:]
 
-    if type == 0: return try_unpack(Type.add,   KEY, rest)
-    if type == 1: return try_unpack(Type.count, KEY, rest)
+    if type == 0: return try_unpack(Type.add,   ADD_REQ, rest)
+    if type == 1: return try_unpack(Type.count, COUNT_REQ, rest)
     if type == 2: return try_unpack(Type.sync,  SYNC_REQ, rest)
     if type == 3: return try_unpack(Type.peer,  PEER_REQ, rest)
     if type == 4: return (Type.ack, None)

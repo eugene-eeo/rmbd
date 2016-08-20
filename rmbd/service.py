@@ -2,7 +2,7 @@ from time import time
 import gevent
 import gevent.socket as socket
 from .countminsketch import CountMinSketch, merge
-from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit
+from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit, Request
 
 
 def normalize(addr):
@@ -25,6 +25,7 @@ class Service(object):
         self.socket = socket
         self.peers = set()
         self.acks = {}
+        self.stopped = False
         self.bg_sync = gevent.spawn(self.background_sync)
         self.handlers = {
             Type.add:   self.handle_add,
@@ -39,14 +40,14 @@ class Service(object):
         if not info:
             return
         req = Request(*info, addr)
-        self.handlers[info.type](req)
+        self.handlers[req.type](req)
 
     def stop(self):
-        self.bg_sync.kill()
+        self.stopped = True
 
     def background_sync(self):
         last_sent = {}
-        while True:
+        while not self.stopped:
             for peer in get_outdated(self.acks, last_sent):
                 self.peers.remove(peer)
             self.acks.clear()

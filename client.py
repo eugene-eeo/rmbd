@@ -1,8 +1,6 @@
 import struct
 import socket
-from rmbd.protocol import KEY, SYNC_REQ, COUNT_RES, PEER_REQ
-
-b = lambda x: chr(x).encode()
+from rmbd.protocol import bit, Type, ADD_REQ, COUNT_REQ, SYNC_REQ, COUNT_RES, PEER_REQ
 
 
 class RmbdClient:
@@ -14,16 +12,16 @@ class RmbdClient:
         self.socket.sendto(req, self.addr)
 
     def add(self, key):
-        self.send(b(0) + KEY.pack(key))
+        self.send(bit(Type.add) + ADD_REQ.pack(key))
 
     def count(self, key):
-        self.send(b(1) + KEY.pack(key))
+        self.send(bit(Type.count) + COUNT_REQ.pack(key))
         recv, count = COUNT_RES.unpack(self.socket.recv(COUNT_RES.size))
         if recv == key:
             return count
 
     def sync(self, row, counters):
-        self.send(b(2) + SYNC_REQ.pack(row, *counters))
+        self.send(bit(Type.sync) + SYNC_REQ.pack(row, *counters))
 
     def peer(self, peer):
-        self.send(b(3) + PEER_REQ.pack(*peer))
+        self.send(bit(Type.peer) + PEER_REQ.pack(*peer))
