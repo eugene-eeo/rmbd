@@ -38,7 +38,4 @@ def test_parse_invalid():
 
 def test_bit():
     for item in Type:
-        b_ = bit(item)
-        assert isinstance(b_, bytes)
-        assert b_[0] == item.value
-        assert b_ == chr(item.value).encode()
+        assert bit(item) == chr(item.value).encode()
