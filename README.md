@@ -24,6 +24,7 @@ When servers receive a `sync` request, they update their count-min-sketch
 using the following algorithm:
 
 ```
+cms = cms_table[peer]
 for i, datum in enumerate(received_row):
     cms[received_index][i] = max(
         cms[received_index][i],
@@ -67,4 +68,3 @@ And then to make them talk to each other:
 
  - make cli
  - implement fully automatic sync mechanism
- - integration tests
