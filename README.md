@@ -24,12 +24,13 @@ When servers receive a `sync` request, they update their count-min-sketch
 using the following algorithm:
 
 ```
-cms = cms_table[peer]
-for i, datum in enumerate(received_row):
-    cms[received_index][i] = max(
-        cms[received_index][i],
-        datum,
-        )
+def merge(peer, index, row):
+    cms = cms_table[peer]
+    for i, datum in enumerate(row):
+        cms[index][i] = max(
+            cms[index][i],
+            datum,
+            )
 ```
 
 After a successful update servers will respond to the sender with
