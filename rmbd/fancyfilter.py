@@ -6,24 +6,24 @@ def khash(k, datum):
         yield fnv1a_32(datum, i)
 
 
-class CountMinSketch:
-    def __init__(self, width=100, depth=10):
+class FancyFilter:
+    def __init__(self, width=400, depth=10):
         self.width = width
         self.depth = depth
-        self.array = [[0]*self.width for _ in range(self.depth)]
+        self.array = [[False]*self.width for _ in range(self.depth)]
 
     def add(self, datum):
         for row, h in zip(self.array, khash(self.depth, datum)):
-            row[h % self.width] += 1
+            row[h % self.width] = True
 
-    def count(self, datum):
-        xs = []
+    def has(self, datum):
         for row, h in zip(self.array, khash(self.depth, datum)):
-            xs.append(row[h % self.width])
-        return min(xs)
+            if not row[h % self.width]:
+                return False
+        return True
 
 
 def merge(cms, index, counters):
     row = cms.array[index]
     for idx, item in enumerate(counters):
-        row[idx] = max(row[idx], item)
+        row[idx] |= item

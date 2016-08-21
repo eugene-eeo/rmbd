@@ -1,5 +1,5 @@
 from gevent.server import DatagramServer
-from rmbd.protocol import COUNT_RES
+from rmbd.protocol import HAS_RES
 from .utils import *
 
 
@@ -7,20 +7,20 @@ from .utils import *
 def test_server_count_add(send, recv, _):
     send(add_request(b'abc'))
     send(add_request(b'abc'))
-    send(count_request(b'abc'))
+    send(has_request(b'abc'))
 
-    key, count = recv(COUNT_RES)
+    key, exists = recv(HAS_RES)
     assert key == b'abc'
-    assert count == 2
+    assert exists
 
 
 @with_server
 def test_server_count_not_added(send, recv, _):
-    send(count_request(b'key'))
+    send(has_request(b'key'))
 
-    key, count = recv(COUNT_RES)
+    key, exists = recv(HAS_RES)
     assert key == b'key'
-    assert count == 0
+    assert not exists
 
 
 @with_server
@@ -31,8 +31,8 @@ def test_one_way_sync(send, recv, _):
 
         @retry(3)
         def test():
-            send(count_request(b'key'), peer.address)
-            assert recv(COUNT_RES) == (b'key', 1)
+            send(has_request(b'key'), peer.address)
+            assert recv(HAS_RES) == (b'key', True)
 
 
 @with_server
@@ -46,8 +46,7 @@ def test_two_way_sync(send, recv, a):
 
         @retry(3)
         def test():
-            send(count_request(b'key'), b.address)
-            send(count_request(b'key'), a.address)
-            assert recv(COUNT_RES) == (b'key', 2)
-            assert recv(COUNT_RES) == (b'key', 2)
-
+            send(has_request(b'key'), b.address)
+            send(has_request(b'key'), a.address)
+            assert recv(HAS_RES) == (b'key', True)
+            assert recv(HAS_RES) == (b'key', True)

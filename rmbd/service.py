@@ -2,12 +2,8 @@ from collections import defaultdict
 from time import time
 import gevent
 import gevent.socket as socket
-from .countminsketch import CountMinSketch, merge
-from .protocol import parse, COUNT_RES, SYNC_REQ, Type, bit, Request
-
-
-def sum_cms_count(key, table):
-    return sum(cms.count(key) for cms in table.values())
+from .fancyfilter import FancyFilter, merge
+from .protocol import parse, HAS_RES, SYNC_REQ, Type, bit, Request
 
 
 def normalize(addr):
@@ -25,21 +21,20 @@ class Service(object):
     sync_delay = 0.5
 
     def __init__(self, address, socket):
+        self.ff = FancyFilter()
         self.address = normalize(address)
         self.socket = socket
-        self.cms = CountMinSketch()
-        self.peer_cms = defaultdict(CountMinSketch)
         self.peers = set()
         self.acks = {}
         self.stopped = False
-        self.bg_sync = gevent.spawn(self.background_sync)
         self.handlers = {
-            Type.add:   self.handle_add,
-            Type.count: self.handle_count,
-            Type.sync:  self.handle_sync,
-            Type.peer:  self.handle_peer,
-            Type.ack:   self.handle_ack,
+            Type.add:  self.handle_add,
+            Type.has:  self.handle_has,
+            Type.sync: self.handle_sync,
+            Type.peer: self.handle_peer,
+            Type.ack:  self.handle_ack,
             }
+        gevent.spawn(self.background_sync)
 
     def dispatch(self, data, addr):
         info = parse(data)
@@ -58,7 +53,7 @@ class Service(object):
                 self.peers.remove(peer)
             self.acks.clear()
             last_sent.clear()
-            for index, row in enumerate(self.cms.array):
+            for index, row in enumerate(self.ff.array):
                 packet = bit(Type.sync) + SYNC_REQ.pack(index, *row)
                 for peer in self.peers:
                     self.socket.sendto(packet, peer)
@@ -67,21 +62,19 @@ class Service(object):
 
     def handle_add(self, request):
         key, = request.params
-        self.cms.add(key)
+        self.ff.add(key)
 
-    def handle_count(self, request):
+    def handle_has(self, request):
         key, = request.params
-        count = self.cms.count(key) + sum_cms_count(key, self.peer_cms)
         self.socket.sendto(
-            COUNT_RES.pack(key, count),
+            HAS_RES.pack(key, self.ff.has(key)),
             request.peer,
             )
 
     def handle_sync(self, request):
         index, *row = request.params
-        cms = self.peer_cms[request.peer]
-        if index < cms.depth:
-            merge(cms, index, row)
+        if index < self.ff.depth:
+            merge(self.ff, index, row)
             self.socket.sendto(bit(Type.ack), request.peer)
 
     def handle_peer(self, request):

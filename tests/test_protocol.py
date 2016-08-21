@@ -1,4 +1,4 @@
-from rmbd.protocol import ADD_REQ, COUNT_REQ, PEER_REQ, SYNC_REQ, Type, parse, bit
+from rmbd.protocol import ADD_REQ, HAS_REQ, PEER_REQ, SYNC_REQ, Type, parse, bit
 
 
 addr = ('localhost', 9000)
@@ -9,13 +9,13 @@ def test_parse_add():
     assert req == (Type.add, (b'abc',))
 
 
-def test_parse_count():
-    req = parse(b'\x01' + COUNT_REQ.pack(b'abc'))
-    assert req == (Type.count, (b'abc',))
+def test_parse_has():
+    req = parse(b'\x01' + HAS_REQ.pack(b'abc'))
+    assert req == (Type.has, (b'abc',))
 
 
 def test_parse_sync():
-    row = (0,) * 100
+    row = (True,) * 400
     req = parse(b'\x02' + SYNC_REQ.pack(1, *row))
     assert req == (Type.sync, (1,) + row)
 

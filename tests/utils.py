@@ -3,15 +3,15 @@ from functools import wraps
 import gevent
 import gevent.socket as socket
 from rmbd.server import Server
-from rmbd.protocol import Type, bit, COUNT_REQ, ADD_REQ, COUNT_RES, PEER_REQ
+from rmbd.protocol import Type, bit, HAS_REQ, ADD_REQ, PEER_REQ
 
 
 def add_request(key):
     return bit(Type.add) + ADD_REQ.pack(key)
 
 
-def count_request(key):
-    return bit(Type.count) + COUNT_REQ.pack(key)
+def has_request(key):
+    return bit(Type.has) + HAS_REQ.pack(key)
 
 
 def peer_request(peer):
