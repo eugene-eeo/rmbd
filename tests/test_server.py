@@ -63,12 +63,12 @@ def test_path_guarantee(send, recv, a):
         send(add_request(b'key'), a.address)
         send(add_request(b'abc'), d.address)
 
-        @retry(3)
+        @retry(5)
         def test():
             send(has_request(b'key'), d.address)
             assert recv(HAS_RES) == (b'key', True)
 
-        @retry(3)
+        @retry(5)
         def test():
             send(has_request(b'abc'), c.address)
             assert recv(HAS_RES) == (b'abc', True)

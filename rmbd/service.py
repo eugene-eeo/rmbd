@@ -1,4 +1,3 @@
-from collections import defaultdict
 from time import time
 import gevent
 import gevent.socket as socket
