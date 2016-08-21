@@ -15,7 +15,7 @@ for the formats.
 | type | byte   | format   | description                                       | response     |
 |:----:|--------|----------|---------------------------------------------------|--------------|
 | add  | `\x00` | `!140p`  | add a key (`140p`)                                |              |
-| has  | `\x01` | `!140p`  | get existece of key                               | `!140p?`     |
+| has  | `\x01` | `!140p`  | query the existence of a key (`140p`)             | `!140p?`     |
 | sync | `\x02` | `!H400?` | updates the row (`400?`) at the given index (`H`) | `\x04` (ack) |
 | peer | `\x03` | `!140pL` | add a peer (`140p`, `L`) to the peers list        |              |
 | ack  | `\x04` |          | acknowledge the successful sync of a row          |              |
