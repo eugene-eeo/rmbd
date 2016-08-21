@@ -3,7 +3,9 @@
 Experimental server that can replicate an adapted bloom filter with other
 instances by using a gossip protocol, for Python 3+ because reasons.
 It is also a way for me to learn the lower level libraries and tools
-in Python, e.g. buffers and structs.
+in Python, e.g. buffers and structs. It guarantees that if you have at
+least one one-way path from node A to node B, changes in A will be
+reflected in B.
 
 ## wat
 
