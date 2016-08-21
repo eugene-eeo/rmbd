@@ -1,8 +1,13 @@
+from collections import defaultdict
 from time import time
 import gevent
 import gevent.socket as socket
 from .countminsketch import CountMinSketch, merge
 from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit, Request
+
+
+def sum_cms_count(key, table):
+    return sum(cms.count(key) for cms in table.values())
 
 
 def normalize(addr):
@@ -21,6 +26,7 @@ class Service(object):
 
     def __init__(self, address, socket):
         self.cms = CountMinSketch(width=WIDTH, depth=DEPTH)
+        self.peer_cms = defaultdict(CountMinSketch)
         self.address = normalize(address)
         self.socket = socket
         self.peers = set()
@@ -65,15 +71,17 @@ class Service(object):
 
     def handle_count(self, request):
         key, = request.params
+        count = self.cms.count(key) + sum_cms_count(key, self.peer_cms)
         self.socket.sendto(
-            COUNT_RES.pack(key, self.cms.count(key)),
+            COUNT_RES.pack(key, count),
             request.peer,
             )
 
     def handle_sync(self, request):
         index, *row = request.params
-        if index < self.cms.depth:
-            merge(self.cms, index, row)
+        cms = self.peer_cms[request.peer]
+        if index < cms.depth:
+            merge(cms, index, row)
             self.socket.sendto(bit(Type.ack), request.peer)
 
     def handle_peer(self, request):

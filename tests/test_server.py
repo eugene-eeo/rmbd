@@ -95,9 +95,6 @@ def test_two_way_sync(send, recv, a):
         send(bit(Type.peer) + PEER_REQ.pack(*encode_addr(a.address)), b.address)
 
         send(bit(Type.add) + ADD_REQ.pack(b'key'), a.address)
-
-        # allow for sync to take place
-        gevent.sleep(0.5)
         send(bit(Type.add) + ADD_REQ.pack(b'key'), b.address)
 
         @retry(3)
