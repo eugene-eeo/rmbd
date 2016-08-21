@@ -23,15 +23,13 @@ for the formats.
 When servers receive a `sync` request, they update their count-min-sketch
 using the following algorithm:
 
-```
-def merge(peer, index, row):
-    cms = cms_table[peer]
-    for i, datum in enumerate(row):
-        cms[index][i] = max(
-            cms[index][i],
-            datum,
-            )
-```
+    def merge(peer, index, row):
+        cms = cms_table[peer]
+        for i, datum in enumerate(row):
+            cms[index][i] = max(
+                cms[index][i],
+                datum,
+                )
 
 After a successful update servers will respond to the sender with
 an `ack`.
