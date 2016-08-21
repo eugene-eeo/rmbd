@@ -6,9 +6,17 @@ from rmbd.server import Server
 from rmbd.protocol import Type, bit, COUNT_REQ, ADD_REQ, COUNT_RES, PEER_REQ
 
 
-def encode_addr(addr):
-    host, port = addr
-    return host.encode(), port
+def add_request(key):
+    return bit(Type.add) + ADD_REQ.pack(key)
+
+
+def count_request(key):
+    return bit(Type.count) + COUNT_REQ.pack(key)
+
+
+def peer_request(peer):
+    host, port = peer
+    return bit(Type.peer) + PEER_REQ.pack(host.encode(), port)
 
 
 def retry(times, delay=0.5):
@@ -58,9 +66,9 @@ def with_server(wrapped):
 
 @with_server
 def test_server_count_add(send, recv, _):
-    send(bit(Type.add) + ADD_REQ.pack(b'abc'))
-    send(bit(Type.add) + ADD_REQ.pack(b'abc'))
-    send(bit(Type.count) + COUNT_REQ.pack(b'abc'))
+    send(add_request(b'abc'))
+    send(add_request(b'abc'))
+    send(count_request(b'abc'))
 
     key, count = recv(COUNT_RES)
     assert key == b'abc'
@@ -69,7 +77,7 @@ def test_server_count_add(send, recv, _):
 
 @with_server
 def test_server_count_not_added(send, recv, _):
-    send(bit(Type.count) + COUNT_REQ.pack(b'key'))
+    send(count_request(b'key'))
 
     key, count = recv(COUNT_RES)
     assert key == b'key'
@@ -79,25 +87,28 @@ def test_server_count_not_added(send, recv, _):
 @with_server
 def test_one_way_sync(send, recv, _):
     with allocate_server() as peer:
-        send(bit(Type.peer) + PEER_REQ.pack(*encode_addr(peer.address)))
-        send(bit(Type.add)  + ADD_REQ.pack(b'key'))
+        send(peer_request(peer.address))
+        send(add_request(b'key'))
 
         @retry(3)
         def test():
-            send(bit(Type.count) + COUNT_REQ.pack(b'key'), peer.address)
+            send(count_request(b'key'), peer.address)
             assert recv(COUNT_RES) == (b'key', 1)
 
 
 @with_server
 def test_two_way_sync(send, recv, a):
     with allocate_server() as b:
-        send(bit(Type.peer) + PEER_REQ.pack(*encode_addr(b.address)), a.address)
-        send(bit(Type.peer) + PEER_REQ.pack(*encode_addr(a.address)), b.address)
+        send(peer_request(b.address), a.address)
+        send(peer_request(a.address), b.address)
 
-        send(bit(Type.add) + ADD_REQ.pack(b'key'), a.address)
-        send(bit(Type.add) + ADD_REQ.pack(b'key'), b.address)
+        send(add_request(b'key'), b.address)
+        send(add_request(b'key'), a.address)
 
         @retry(3)
         def test():
-            send(bit(Type.count) + COUNT_REQ.pack(b'key'), b.address)
+            send(count_request(b'key'), b.address)
             assert recv(COUNT_RES) == (b'key', 2)
+
+        send(count_request(b'key'), a.address)
+        assert recv(COUNT_RES) == (b'key', 2)

@@ -3,7 +3,7 @@ from time import time
 import gevent
 import gevent.socket as socket
 from .countminsketch import CountMinSketch, merge
-from .protocol import parse, COUNT_RES, SYNC_REQ, Type, WIDTH, DEPTH, bit, Request
+from .protocol import parse, COUNT_RES, SYNC_REQ, Type, bit, Request
 
 
 def sum_cms_count(key, table):
@@ -25,10 +25,10 @@ class Service(object):
     sync_delay = 0.5
 
     def __init__(self, address, socket):
-        self.cms = CountMinSketch(width=WIDTH, depth=DEPTH)
-        self.peer_cms = defaultdict(CountMinSketch)
         self.address = normalize(address)
         self.socket = socket
+        self.cms = CountMinSketch()
+        self.peer_cms = defaultdict(CountMinSketch)
         self.peers = set()
         self.acks = {}
         self.stopped = False
