@@ -23,10 +23,9 @@ for the formats.
 When servers receive a `sync` request, they update their filters
 using the following algorithm:
 
-    def merge(peer, index, row):
-        cms = cms_table[peer]
+    def merge(index, row):
         for i, bit in enumerate(row):
-            cms[index][i] |= bit
+            filter[index][i] |= bit
 
 After a successful update servers will respond to the sender with
 an `ack`.
