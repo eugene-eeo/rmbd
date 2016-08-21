@@ -47,7 +47,7 @@ def test_two_way_sync(send, recv, a):
         @retry(3)
         def test():
             send(count_request(b'key'), b.address)
+            send(count_request(b'key'), a.address)
+            assert recv(COUNT_RES) == (b'key', 2)
             assert recv(COUNT_RES) == (b'key', 2)
 
-        send(count_request(b'key'), a.address)
-        assert recv(COUNT_RES) == (b'key', 2)
