@@ -31,7 +31,7 @@ def retry(times, delay=0.5):
                 pass
             n -= 1
             gevent.sleep(delay)
-        raise error
+        raise error # pragma: no cover
     return run
 
 

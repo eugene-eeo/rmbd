@@ -1,9 +1,6 @@
 from rmbd.protocol import ADD_REQ, HAS_REQ, PEER_REQ, SYNC_REQ, Type, parse, bit
 
 
-addr = ('localhost', 9000)
-
-
 def test_parse_add():
     req = parse(b'\x00' + ADD_REQ.pack(b'abc'))
     assert req == (Type.add, (b'abc',))
@@ -36,14 +33,11 @@ def test_parse_tip_invalid():
 
 
 def test_parse_payload_invalid():
-    for bit in range(5):
+    for bit in range(4):
         tip = chr(bit).encode()
         data = b'random invalid data'
-        # we don't care about body of ack requests
-        if bit == 4:
-            assert parse(tip) == (Type.ack, None)
-            continue
         assert not parse(tip + data)
+    assert parse(chr(4).encode() + b'random') == (Type.ack, None)
 
 
 def test_bit():
