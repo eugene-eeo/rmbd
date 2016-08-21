@@ -1,6 +1,5 @@
 import gevent
 from gevent.server import DatagramServer
-from gevent.pool import Pool
 from .service import Service
 
 
@@ -17,9 +16,8 @@ class Server(DatagramServer):
         self.__service.stop()
 
 
-def start_server(addr, max_connections=None):
-    spawn = Pool(max_connections) if max_connections else gevent.spawn
-    u = Server(addr, spawn=spawn)
+def start_server(addr):
+    u = Server(addr)
     try:
         u.serve_forever()
     except KeyboardInterrupt:
