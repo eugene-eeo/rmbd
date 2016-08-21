@@ -7,7 +7,7 @@ def khash(k, datum):
 
 
 class FancyFilter:
-    def __init__(self, width=400, depth=10):
+    def __init__(self, width=400, depth=5):
         self.width = width
         self.depth = depth
         self.array = [[False]*self.width for _ in range(self.depth)]
