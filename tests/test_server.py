@@ -51,21 +51,3 @@ def test_two_way_sync(send, recv, a):
 
         send(count_request(b'key'), a.address)
         assert recv(COUNT_RES) == (b'key', 2)
-
-
-@with_server
-def test_inactive_client_is_disconnected(send, recv, server):
-    requests = []
-
-    class InactiveClient(DatagramServer):
-        def handle(self, data, peer):
-            requests.append(data)
-
-    inactive = InactiveClient(('localhost', 0))
-    send(peer_request(inactive.address), server.address)
-
-    @retry(3)
-    def test_no_more_requests():
-        current_size = len(requests)
-        gevent.sleep()
-        assert len(requests) == current_size
