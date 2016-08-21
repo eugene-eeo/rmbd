@@ -54,11 +54,11 @@ And then to make them talk to each other:
     >>> d.peer((b'localhost', 8000))
 
     >>> c.add(b'abc')
-    >>> d.add(b'abc')
-    >>> c.count(b'abc') # HOLY CRAP
-    2
-    >>> d.count(b'abc') # MUCH WOW
-    2
+    >>> d.add(b'def')
+    >>> c.has(b'def') # HOLY CRAP
+    True
+    >>> d.has(b'abc') # MUCH WOW
+    True
 
 ## todo
 
