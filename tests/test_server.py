@@ -42,13 +42,16 @@ def test_two_way_sync(send, recv, a):
         send(peer_request(a.address), b.address)
 
         send(add_request(b'key'), b.address)
-        send(add_request(b'key'), a.address)
+        send(add_request(b'abc'), a.address)
 
         @retry(3)
         def test():
-            send(has_request(b'key'), b.address)
+            send(has_request(b'abc'), b.address)
+            assert recv(HAS_RES) == (b'abc', True)
+
+        @retry(3)
+        def test():
             send(has_request(b'key'), a.address)
-            assert recv(HAS_RES) == (b'key', True)
             assert recv(HAS_RES) == (b'key', True)
 
 

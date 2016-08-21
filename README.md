@@ -61,6 +61,11 @@ And then to make them talk to each other:
     >>> d.has(b'abc') # MUCH WOW
     True
 
+## dev
+
+    $ pip install coverage nose
+    $ nosetests --with-coverage --cover-package=rmbd
+
 ## todo
 
  - make cli
