@@ -90,3 +90,13 @@ def test_inactive_client(send, recv, a):
     @retry(3, delay=1, at_least=2)
     def test():
         assert len(req) == 5
+
+
+@with_server
+def test_bad_data(send, recv, a):
+    send(b'random binary gunk')
+    send(add_request(b'key'))
+
+    send(has_request(b'key'))
+    # check that the server hasn't crashed
+    assert recv(HAS_RES) == (b'key', True)
