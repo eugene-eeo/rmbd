@@ -1,3 +1,4 @@
+import gevent
 from gevent.server import DatagramServer
 from rmbd.protocol import HAS_RES
 from .utils import *
@@ -75,3 +76,17 @@ def test_path_guarantee(send, recv, a):
         def test():
             send(has_request(b'abc'), c.address)
             assert recv(HAS_RES) == (b'abc', True)
+
+
+@with_server
+def test_inactive_client(send, recv, a):
+    req = []
+    def handler(data, addr):
+        req.append(data)
+    server = DatagramServer('localhost:0', handler)
+    server.start()
+    send(peer_request(server.address))
+
+    @retry(3, delay=1, at_least=2)
+    def test():
+        assert len(req) == 5

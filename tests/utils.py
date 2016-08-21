@@ -19,19 +19,20 @@ def peer_request(peer):
     return bit(Type.peer) + PEER_REQ.pack(host.encode(), port)
 
 
-def retry(times, delay=0.5):
-    def run(fn, n=times):
+def retry(times, delay=0.5, at_least=1): # pragma: no cover
+    def run(fn, n=times, t=at_least):
         error = None
         while n > 0:
             try:
                 fn()
-                return
+                t -= 1
+                if not t: return
             except Exception as err:
                 error = err
                 pass
             n -= 1
             gevent.sleep(delay)
-        raise error # pragma: no cover
+        raise error
     return run
 
 
