@@ -50,3 +50,25 @@ def test_two_way_sync(send, recv, a):
             send(has_request(b'key'), a.address)
             assert recv(HAS_RES) == (b'key', True)
             assert recv(HAS_RES) == (b'key', True)
+
+
+@with_server
+def test_path_guarantee(send, recv, a):
+    with allocate_server() as b, allocate_server() as c, allocate_server() as d:
+        send(peer_request(b.address), a.address)
+        send(peer_request(c.address), b.address)
+        send(peer_request(d.address), c.address)
+        send(peer_request(a.address), d.address)
+
+        send(add_request(b'key'), a.address)
+        send(add_request(b'abc'), d.address)
+
+        @retry(3)
+        def test():
+            send(has_request(b'key'), d.address)
+            assert recv(HAS_RES) == (b'key', True)
+
+        @retry(3)
+        def test():
+            send(has_request(b'abc'), c.address)
+            assert recv(HAS_RES) == (b'abc', True)
