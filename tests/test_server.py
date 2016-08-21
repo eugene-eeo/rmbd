@@ -91,6 +91,8 @@ def test_inactive_client(send, recv, a):
     def test():
         assert len(req) == 5
 
+    server.stop()
+
 
 @with_server
 def test_bad_data(send, recv, a):

@@ -1,2 +1,11 @@
 [run]
-concurrency=gevent
+branch = False
+concurrency = gevent
+source =
+    rmbd
+omit =
+    setup.py
+    client.py
+
+[report]
+show_missing = 1

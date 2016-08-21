@@ -61,4 +61,5 @@ def with_server(wrapped):
                 server,
             )
             server.stop()
+            sock.close()
     return fn
