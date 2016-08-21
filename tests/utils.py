@@ -40,9 +40,8 @@ def udp_socket():
 
 
 @contextmanager
-def allocate_server(ADDR=[8000]):
-    ADDR[0] += 1
-    server = Server(('localhost', ADDR[0]))
+def allocate_server():
+    server = Server(('localhost', 0))
     server.start()
     try:
         yield server
