@@ -5,9 +5,9 @@ from enum import Enum
 
 DEPTH = 10
 WIDTH = 100
-ADD_REQ  = struct.Struct('!140p')
-HAS_REQ  = struct.Struct('!140p')
-HAS_RES  = struct.Struct('!140p?')
+ADD_REQ = struct.Struct('!140p')
+HAS_REQ = struct.Struct('!140p')
+HAS_RES = struct.Struct('!140p?')
 PEER_REQ = struct.Struct('!140pL')
 SYNC_REQ = struct.Struct('!H400?')
 
@@ -15,11 +15,11 @@ Request = namedtuple('Request', 'type,params,peer')
 
 
 class Type(Enum):
-    add  = 0
-    has  = 1
+    add = 0
+    has = 1
     sync = 2
     peer = 3
-    ack  = 4
+    ack = 4
 
 
 def bit(type):
