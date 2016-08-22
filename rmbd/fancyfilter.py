@@ -23,7 +23,7 @@ class FancyFilter:
         return True
 
 
-def merge(cms, index, counters):
-    row = cms.array[index]
+def merge(ff, index, counters):
+    row = ff.array[index]
     for idx, item in enumerate(counters):
         row[idx] |= item
