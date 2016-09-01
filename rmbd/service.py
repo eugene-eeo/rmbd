@@ -1,7 +1,7 @@
 from time import time
 import gevent
 import gevent.socket as socket
-from .fancyfilter import FancyFilter, merge
+from .fancyfilter import FancyFilter, merge, partition
 from .protocol import parse, HAS_RES, SYNC_REQ, Type, bit, Request
 
 
@@ -52,11 +52,12 @@ class Service(object):
                 self.peers.remove(peer)
             self.acks.clear()
             last_sent.clear()
-            for index, row in enumerate(self.ff.array):
-                packet = bit(Type.sync) + SYNC_REQ.pack(index, *row)
-                for peer in self.peers:
-                    self.socket.sendto(packet, peer)
-                    last_sent[peer] = time()
+            if self.peers:
+                for offset, row in partition(self.ff):
+                    packet = bit(Type.sync) + SYNC_REQ.pack(offset, *row)
+                    for peer in self.peers:
+                        self.socket.sendto(packet, peer)
+                        last_sent[peer] = time()
             gevent.sleep(self.sync_delay)
 
     def handle_add(self, request):
@@ -71,9 +72,9 @@ class Service(object):
             )
 
     def handle_sync(self, request):
-        index, *row = request.params
-        if index < self.ff.depth:
-            merge(self.ff, index, row)
+        offset, *row = request.params
+        if offset < self.ff.depth:
+            merge(self.ff, offset, row)
             self.socket.sendto(bit(Type.ack), request.peer)
 
     def handle_peer(self, request):

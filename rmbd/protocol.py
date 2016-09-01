@@ -3,8 +3,6 @@ from collections import namedtuple
 from enum import Enum
 
 
-DEPTH = 10
-WIDTH = 100
 ADD_REQ = struct.Struct('!140p')
 HAS_REQ = struct.Struct('!140p')
 HAS_RES = struct.Struct('!140p?')

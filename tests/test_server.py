@@ -81,9 +81,7 @@ def test_path_guarantee(send, recv, a):
 @with_server
 def test_inactive_client(send, recv, a):
     req = []
-    def handler(data, addr):
-        req.append(data)
-    server = DatagramServer('localhost:0', handler)
+    server = DatagramServer('localhost:0', lambda data, addr: req.append(data))
     server.start()
     send(peer_request(server.address))
 

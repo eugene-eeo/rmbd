@@ -1,18 +1,34 @@
 from string import ascii_lowercase
-from rmbd.fancyfilter import FancyFilter, merge
+from rmbd.fancyfilter import FancyFilter, merge, partition
 
 
 def test_add_count():
-    cms = FancyFilter(width=100, depth=10)
-    cms.add(b'123')
-    assert cms.has(b'123')
+    ff = FancyFilter(width=100, depth=10)
+    ff.add(b'123')
+    assert ff.has(b'123')
 
 
 def test_merge():
-    cms = FancyFilter(width=100, depth=10)
-    cms.add(b'123')
-    for i in range(cms.depth):
-        merge(cms, i, [True]*cms.width)
-    assert cms.has(b'123')
+    ff = FancyFilter(width=100, depth=10)
+    ff.add(b'123')
+    for i, _ in partition(ff):
+        merge(ff, i, [True]*ff.width)
+    assert ff.has(b'123')
     for s in ascii_lowercase:
-        assert cms.has(s.encode())
+        assert ff.has(s.encode())
+
+
+def test_partition():
+    ff = FancyFilter(width=2, depth=4)
+    ff.array = [
+        True, False,
+        False, True,
+        False, False,
+        True, True,
+        ]
+    assert list(partition(ff)) == [
+        (0, [True, False]),
+        (1, [False, True]),
+        (2, [False, False]),
+        (3, [True, True]),
+    ]
