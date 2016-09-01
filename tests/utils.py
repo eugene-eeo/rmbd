@@ -3,7 +3,7 @@ from functools import wraps
 import gevent
 import gevent.socket as socket
 from rmbd.server import Server
-from rmbd.protocol import Type, bit, HAS_REQ, ADD_REQ, PEER_REQ
+from rmbd.protocol import Type, bit, HAS_REQ, ADD_REQ, PEER_REQ, SYNC_REQ
 
 
 def add_request(key):
@@ -17,6 +17,10 @@ def has_request(key):
 def peer_request(peer):
     host, port = peer
     return bit(Type.peer) + PEER_REQ.pack(host.encode(), port)
+
+
+def sync_request(offset, row):
+    return bit(Type.sync) + SYNC_REQ.pack(offset, *row)
 
 
 def retry(times, delay=0.5, at_least=1): # pragma: no cover

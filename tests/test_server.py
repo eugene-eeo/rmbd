@@ -1,7 +1,8 @@
 import gevent
 from gevent.server import DatagramServer
 from rmbd.protocol import HAS_RES
-from .utils import with_server, allocate_server, peer_request, add_request, has_request, retry
+from .utils import with_server, allocate_server, peer_request, add_request,\
+        has_request, retry, sync_request
 
 
 @with_server
@@ -93,10 +94,19 @@ def test_inactive_client(send, recv, a):
 
 
 @with_server
-def test_bad_data(send, recv, a):
+def test_bad_data(send, recv, _):
     send(b'random binary gunk')
     send(add_request(b'key'))
 
     send(has_request(b'key'))
     # check that the server hasn't crashed
+    assert recv(HAS_RES) == (b'key', True)
+
+
+@with_server
+def test_bad_sync_offset(send, recv, _):
+    for i in range(10, 50, 5):
+        send(sync_request(20, (True,)*400))
+    send(add_request(b'key'))
+    send(has_request(b'key'))
     assert recv(HAS_RES) == (b'key', True)
