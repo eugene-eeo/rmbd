@@ -42,7 +42,7 @@ removes the peers which have not responded with an `ack`.
 
 The toolchain is a big WIP. Currently to start server:
 
-    $ pip install -r requirements.txt
+    $ python setup.py install
     $ python -m rmbd localhost:8000 & python -m rmbd localhost:9000
 
 And then to make them talk to each other:
