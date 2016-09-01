@@ -6,7 +6,7 @@ def khash(k, datum):
         yield fnv1a_32(datum, i)
 
 
-class FancyFilter:
+class BloomFilter:
     def __init__(self, width=400, depth=5):
         self.width = width
         self.depth = depth
@@ -24,13 +24,13 @@ class FancyFilter:
         return True
 
 
-def merge(ff, offset, counters):
+def merge(bf, offset, counters):
     for idx, item in enumerate(counters):
-        ff.array[offset*ff.width + idx] |= item
+        bf.array[offset*bf.width + idx] |= item
 
 
-def partition(ff):
-    width = ff.width
-    for i in range(ff.depth):
+def partition(bf):
+    width = bf.width
+    for i in range(bf.depth):
         start = i * width
-        yield i, ff.array[start:start+width]
+        yield i, bf.array[start:start+width]
