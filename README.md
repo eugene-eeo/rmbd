@@ -1,7 +1,7 @@
 # rmbd
 
-Experimental server that can replicate an adapted bloom filter with other
-instances by using a gossip protocol, for Python 3+ because reasons.
+Experimental server that can replicate a fixed-size bloom filter with
+other instances by using a gossip protocol, for Python 3+ because reasons.
 It is also a way for me to learn the lower level libraries and tools
 in Python, e.g. buffers and structs. It guarantees that if you have at
 least one one-way path from node A to node B, changes in A will be
@@ -14,20 +14,21 @@ Servers respond to 5 types of requests. Requests are in the form
 Refer to [struct](https://docs.python.org/3/library/struct.html)
 for the formats.
 
-| type | byte   | format   | description                                       | response     |
-|:----:|--------|----------|---------------------------------------------------|--------------|
-| add  | `\x00` | `!140p`  | add a key (`140p`)                                |              |
-| has  | `\x01` | `!140p`  | query the existence of a key (`140p`)             | `!140p?`     |
-| sync | `\x02` | `!H400?` | updates the row (`400?`) at the given index (`H`) | `\x04` (ack) |
-| peer | `\x03` | `!140pL` | add a peer (`140p`, `L`) to the peers list        |              |
-| ack  | `\x04` |          | acknowledge the successful sync of a row          |              |
+| type | byte   | format   | description                                    | response     |
+|:----:|--------|----------|------------------------------------------------|--------------|
+| add  | `\x00` | `!140p`  | add a key (`140p`)                             |              |
+| has  | `\x01` | `!140p`  | query the existence of a key (`140p`)          | `!140p?`     |
+| sync | `\x02` | `!H400?` | updates the filter at the given offset (`H`)   | `\x04` (ack) |
+| peer | `\x03` | `!140pL` | add a peer (`140p`, `L`) to the peers list     |              |
+| ack  | `\x04` |          | acknowledge the successful sync of a row       |              |
 
 When servers receive a `sync` request, they update their filters
-using the following algorithm:
+using the following algorithm (where `width` is fixed and part of
+the protocol):
 
-    def merge(index, row):
+    def merge(offset, row):
         for i, bit in enumerate(row):
-            filter[index][i] |= bit
+            filter[offset*width + i] |= bit
 
 After a successful update servers will respond to the sender with
 an `ack`.
