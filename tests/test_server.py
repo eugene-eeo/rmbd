@@ -1,7 +1,7 @@
 import gevent
 from gevent.server import DatagramServer
 from rmbd.protocol import HAS_RES
-from .utils import *
+from .utils import with_server, allocate_server, peer_request, add_request, has_request, retry
 
 
 @with_server
