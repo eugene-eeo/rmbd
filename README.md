@@ -26,16 +26,16 @@ When servers receive a `sync` request, they update their filters
 using the following algorithm (where `width` is fixed and part of
 the protocol):
 
-    def merge(offset, row):
-        for i, bit in enumerate(row):
+    def merge(offset, chunk):
+        for i, bit in enumerate(chunk):
             filter[offset*width + i] |= bit
 
 After a successful update servers will respond to the sender with
 an `ack`.
 
-Each server has a background sync task that sends the filter, row by
-row to other nodes by sending them `sync` requests. After that it
-sleeps for a predefined delay and then removes the peers which have
+Each server has a background sync task that sends the filter, chunk
+by chunk to other nodes by sending them `sync` requests. After that
+it sleeps for a predefined delay and then removes the peers which have
 not responded with an `ack`.
 
 ## usage
