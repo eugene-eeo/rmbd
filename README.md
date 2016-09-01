@@ -34,9 +34,9 @@ After a successful update servers will respond to the sender with
 an `ack`.
 
 Each server has a background sync task that sends the filter, chunk
-by chunk to other nodes by sending them `sync` requests. After that
-it sleeps for a predefined delay and then removes the peers which have
-not responded with an `ack`.
+by chunk to other nodes in their peer list by sending them `sync`
+requests. After that it sleeps for a predefined delay and then
+removes the peers which have not responded with an `ack`.
 
 ## usage
 
