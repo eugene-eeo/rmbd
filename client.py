@@ -17,9 +17,9 @@ class RmbdClient:
 
     def has(self, key):
         self.request(Type.has, HAS_REQ, key)
-        recv, count = HAS_RES.unpack(self.socket.recv(HAS_RES.size))
+        recv, exists = HAS_RES.unpack(self.socket.recv(HAS_RES.size))
         if recv == key:
-            return count
+            return exists
 
     def sync(self, row, counters):
         self.request(Type.sync, SYNC_REQ, row, *counters)
