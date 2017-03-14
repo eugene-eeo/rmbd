@@ -36,7 +36,8 @@ def retry(times, delay=0.5, at_least=1): # pragma: no cover
                 pass
             n -= 1
             gevent.sleep(delay)
-        raise error
+        if t != 0:
+            raise error
     return run
 
 

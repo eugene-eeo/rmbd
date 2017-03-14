@@ -1,4 +1,4 @@
-from time import time
+import time
 import gevent
 import gevent.socket as socket
 from .bloomfilter import BloomFilter, merge, partition
@@ -57,7 +57,7 @@ class Service(object):
                     packet = bit(Type.sync) + SYNC_REQ.pack(offset, *row)
                     for peer in self.peers:
                         self.socket.sendto(packet, peer)
-                        last_sent[peer] = time()
+                        last_sent[peer] = time.time()
             gevent.sleep(self.sync_delay)
 
     def handle_add(self, request):
@@ -83,4 +83,4 @@ class Service(object):
             self.peers.add(peer)
 
     def handle_ack(self, request):
-        self.acks[request.peer] = time()
+        self.acks[request.peer] = time.time()

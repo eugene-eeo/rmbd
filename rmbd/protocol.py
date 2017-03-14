@@ -9,6 +9,7 @@ HAS_RES = struct.Struct('!140p?')
 PEER_REQ = struct.Struct('!140pL')
 SYNC_REQ = struct.Struct('!H400?')
 
+
 Request = namedtuple('Request', 'type,params,peer')
 
 
